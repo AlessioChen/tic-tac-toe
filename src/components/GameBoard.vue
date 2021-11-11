@@ -14,8 +14,7 @@
   </div>
 
   <button @click="handleReset" class="reset-button">RESET BOARD</button>
-  <h1 v-if="winner">The winner is '{{ winner }}'</h1>
-  <h1 v-else-if="draw">It's a draw game</h1>
+  <h1 v-if="message">{{ message }}</h1>
 </template>
 
 <script>
@@ -28,8 +27,8 @@ export default {
     let currentPlayer = "x";
     let board = reactive(["", "", "", "", "", "", "", "", ""]);
     let winCoords = ref([]);
-    let draw = ref(false);
     let moves = 0;
+    let message = ref("");
 
     const winner = computed(() => checkWin());
     const lines = [
@@ -46,13 +45,12 @@ export default {
     //Cell click
     const handleClick = (blockId) => {
       if (winner.value) {
-        moves = 0;
-        draw.value = false;
+        let player = currentPlayer === "o" ? "x" : "o";
+        message.value = "the winner is " + player;
         return;
       }
       if (moves == 8) {
-        draw.value = true;
-        moves = 0;
+        message.value = "It's a draw game";
       }
       if (board[blockId] == "") {
         board[blockId] = currentPlayer;
@@ -63,8 +61,8 @@ export default {
 
     //Reset game
     const handleReset = () => {
+      message.value = "";
       winCoords.value = [];
-      draw.value = false;
       moves = 0;
       for (let i = 0; i < board.length; i++) board[i] = "";
     };
@@ -82,7 +80,14 @@ export default {
       return null;
     };
 
-    return { handleClick, board, winner, handleReset, winCoords, draw };
+    return {
+      handleClick,
+      board,
+      winner,
+      handleReset,
+      winCoords,
+      message,
+    };
   },
 };
 </script>
