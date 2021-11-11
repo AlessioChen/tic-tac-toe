@@ -5,6 +5,8 @@
       :key="index"
       :id="'block_' + index"
       class="block"
+      :class="{ red: winCoords.includes(index) }"
+      ref="name"
       @click="handleClick(index)"
     >
       {{ board[index] }}
@@ -12,20 +14,24 @@
   </div>
 
   <button @click="handleReset" class="reset-button">RESET BOARD</button>
-  <h2 v-if="winner">{{ winner }}</h2>
+  <h1 v-if="winner">The winner is '{{ winner }}'</h1>
+  <h1 v-else-if="draw">It's a draw game</h1>
 </template>
 
 <script>
-import { computed, reactive, ref, toRefs } from "@vue/reactivity";
+import { computed, reactive, ref } from "@vue/reactivity";
 export default {
   name: "GameBoard",
 
   setup() {
+    //variable
     let currentPlayer = "x";
     let board = reactive(["", "", "", "", "", "", "", "", ""]);
+    let winCoords = ref([]);
+    let draw = ref(false);
+    let moves = 0;
 
     const winner = computed(() => checkWin());
-
     const lines = [
       [0, 1, 2],
       [3, 4, 5],
@@ -37,24 +43,38 @@ export default {
       [2, 4, 6],
     ];
 
+    //Cell click
     const handleClick = (blockId) => {
       if (winner.value) {
+        moves = 0;
+        draw.value = false;
         return;
+      }
+      if (moves == 8) {
+        draw.value = true;
+        moves = 0;
       }
       if (board[blockId] == "") {
         board[blockId] = currentPlayer;
         currentPlayer = currentPlayer === "o" ? "x" : "o";
+        moves++;
       }
     };
 
+    //Reset game
     const handleReset = () => {
+      winCoords.value = [];
+      draw.value = false;
+      moves = 0;
       for (let i = 0; i < board.length; i++) board[i] = "";
     };
 
+    //Check game win
     const checkWin = () => {
       for (let i = 0; i < lines.length; i++) {
         const [a, b, c] = lines[i];
         if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          winCoords.value = lines[i];
           return board[a];
         }
       }
@@ -62,7 +82,7 @@ export default {
       return null;
     };
 
-    return { handleClick, board, winner, handleReset };
+    return { handleClick, board, winner, handleReset, winCoords, draw };
   },
 };
 </script>
@@ -106,6 +126,10 @@ export default {
   cursor: pointer;
   background: green;
   color: white;
+}
+
+.red {
+  background: red;
 }
 
 /* Top border */
